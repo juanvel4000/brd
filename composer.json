@@ -1,0 +1,21 @@
+{
+  "name": "juanvel400/brd",
+  "description": "A simple imageboard website with no image support",
+  "type": "project",
+  "license": "BSD-3-Clause",
+  "autoload": {
+    "psr-4": {
+      "Brd\\": "src/"
+    }
+  },
+  "authors": [
+    {
+      "name": "juanvel400",
+      "email": "juanvel400@proton.me"
+    }
+  ],
+  "require": {
+    "robmorgan/phinx": "^0.16.11",
+    "vlucas/phpdotenv": "^5.6"
+  }
+}
