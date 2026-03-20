@@ -56,7 +56,7 @@ class Post
             "INSERT INTO posts (content, delete_key, board, reply_to) VALUES (?, ?, ?, ?)",
         );
         if ($stmt->execute([$content, $delete_key, $board, $reply_to])) {
-            return self::find($pdo->lastInsertId());
+            return self::where("id", $pdo->lastInsertId());
         }
 
         return null;
@@ -89,12 +89,20 @@ class Post
         return $stmt->execute([$this->id]);
     }
 
-    public static function find(int $id): ?Post
-    {
+    public static function where(
+        string $column = "id",
+        string|int $value,
+    ): ?Post {
         $pdo = Connector::getConnection();
 
-        $stmt = $pdo->prepare("SELECT * FROM posts WHERE id = ?");
-        $stmt->execute([$id]);
+        $whitelist = ["id", "board", "reply_to"];
+        $column = mb_strtolower(trim($column));
+        if (!in_array($column, $whitelist)) {
+            throw new \Exception("column '${$column}' is not allowed");
+        }
+
+        $stmt = $pdo->prepare("SELECT * FROM posts WHERE $column = ?");
+        $stmt->execute([$value]);
 
         $data = $stmt->fetch(PDO::FETCH_ASSOC);
         if ($data) {
@@ -115,6 +123,46 @@ class Post
 
     public function parent(): ?Post
     {
-        return self::find($this->reply_to);
+        return self::where("id", $this->reply_to);
+    }
+
+    public static function getBoard(
+        string $board,
+        int $limit = 50,
+        int $offset = 0,
+    ): array {
+        $board = trim(mb_strtolower($board));
+        $pdo = Connector::getConnection();
+
+        $stmt = $pdo->prepare(
+            "SELECT * FROM posts WHERE board = ? AND reply_to IS NULL ORDER BY created_at DESC LIMIT ? OFFSET ? ",
+        );
+
+        $stmt->execute([$board, $limit, $offset]);
+        $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $posts = [];
+        foreach ($data as $post) {
+            $posts[] = new Post($post);
+        }
+        return $posts;
+    }
+
+    public function getReplies(int $limit = 50, int $offset = 0): array
+    {
+        $pdo = Connector::getConnection();
+
+        $stmt = $pdo->prepare(
+            "SELECT * FROM posts WHERE reply_to = ? ORDER BY created_at ASC LIMIT ? OFFSET ?",
+        );
+
+        $stmt->execute([$this->id, $limit, $offset]);
+        $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $posts = [];
+        foreach ($data as $post) {
+            $posts[] = new Post($post);
+        }
+        return $posts;
     }
 }
