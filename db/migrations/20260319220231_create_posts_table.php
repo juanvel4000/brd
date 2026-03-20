@@ -29,7 +29,9 @@ final class CreatePostsTable extends AbstractMigration
             ->addColumn("board", "string", ["null" => false, "limit" => 64])
             ->addTimestamps("created_at", "updated_at")
             ->addColumn("reply_to", "integer", ["null" => true])
-            ->addForeignKey(["reply_to"], "posts", "id")
+            ->addForeignKey(["reply_to"], "posts", "id", [
+                "delete" => "cascade",
+            ])
             ->create();
     }
 }

@@ -2,13 +2,7 @@
 
 namespace Brd\Database;
 
-use Dotenv\Dotenv;
-use PDOException;
 use PDO;
-
-Dotenv::createImmutable(__DIR__ . "/../../");
-Dotenv::load();
-Dotenv::required(["DB_ADAPTER", "DB_NAME"]);
 
 class Connector
 {
