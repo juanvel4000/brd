@@ -39,7 +39,7 @@ class Post
 
         $content = trim(htmlspecialchars($content, encoding: "UTF-8"));
 
-        if (mb_strlen($content) >= 255) {
+        if (mb_strlen($content) > 255) {
             throw new \Exception("post too large (255 charlimit exceeded)");
         }
 
@@ -164,5 +164,17 @@ class Post
             $posts[] = new Post($post);
         }
         return $posts;
+    }
+
+    public function toArray(): array
+    {
+        return [
+            "id" => $this->id,
+            "reply_to" => $this->reply_to,
+            "board" => $this->board,
+            "content" => $this->content,
+            "created_at" => $this->created_at,
+            "updated_at" => $this->updated_at,
+        ];
     }
 }
